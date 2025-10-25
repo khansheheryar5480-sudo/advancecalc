@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport"
+    content="width=device-width,initial-scale=1.0"/>
+    <title>Pro Calculator</title>
+    <style>
+        :root{
+        --bg:#f4f4f4;
+        --text:#222;
+        --panel:#fff;
+        --btn:#e0e0e0;
+        --accent:#4caF50;
+        }
+        body.dark{
+        --bg:#121212;
+        --text:#f1f1f1;
+        --panel:#1e1e1e;
+        --btn:#333;
+        --accent:#66bb6a;    
+        }
+        body{
+        margin:0;
+        background:var(--bg);
+        color:var(--text);
+        font-family:Arial,sans-serif;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;    
+        }
+        .calculator{
+        background:var(--panel);
+        border-radius:16px;
+        box-shadow:0 4px 20px rgba(0,0,0,0.3);
+        padding:20px;
+        width:360px;
+        display:flex;
+        flex-direction:column;    
+        }
+        .top-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
+        }
+        #display{
+        width:100%;
+        padding:12px;
+        font-size:24px;
+        border:none;
+        border-radius:10px;
+        background:var(--btn);
+        color:var(--text);
+        text-align:right;
+        margin-bottom:15px;    
+        }
+        .buttons{
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
+            gap:8px;
+        }
+        button{
+        padding:14px;
+        font-size:16px;
+        border:none;
+        border-radius: 10px;  
+        cursor:pointer;
+        background:var(--btn);
+        color:var(--text);
+        transition:0.2s;
+        }
+        button:hover{
+        background:var(--accent);color:#fff;    
+        }
+        .equal{background:var(--accent);
+        color:#fff;
+        }
+        .clear{
+        background:#f44336;
+        color:#fff;    
+        }
+        .history{
+        margin-top:15px;
+        max-height:120px;
+        overflow-y:auto;
+        background:var(--btn);
+        border-radius:10px;
+        padding:10px;
+        font-size:14px;
+        }
+        .history-item{
+        cursor:pointer;
+        margin:2px 0;    
+        }
+        </style>
+</head>
+<body>
+<div class="calculator">
+<div class="top-bar">
+    <h3>pro calculator</h3>
+    <button
+        onclick="toggleTheme()">
+    </button>
+    </div>
+    <input type="text" id="display"readonly/>
+    <div class="buttons">
+        <button class="clear" onclick="clearDisplay()">C</button>
+        <button onclick="backspace('←')">←</button>
+        <button onclick="append('%')">%</button>
+        <button onclick="append('/')">/</button>
+        <button onclick="append('*')">*</button>
+        <button onclick="append('7')">7</button>
+        <button onclick="append('8')">8</button>
+        <button onclick="append('9')">9</button>
+        <button onclick="append('-')">-</button>
+        <button onclick="append('+')">+</button>
+        <button onclick="append('4')">4</button>
+        <button onclick="append('5')">5</button>
+        <button onclick="append('6')">6</button>
+        <button onclick="sqrt('√')">√</button>
+        <button onclick="append('1')">1</button>
+        <button onclick="append('2')">2</button>
+        <button onclick="append('3')">3</button>
+        <button onclick="append('.')">.</button>
+        <button onclick="append('0')"style="grid-colomn:span 2;">0</button>
+        <button onclick="calculate()"class="equal">=</button>
+        <button onclick="pi('π')">π</button>
+        <button onclick="econst()">e</button>
+        <button onclick="sin()">sin</button>
+        <button onclick="cos()">cos</button>
+        <button onclick="tan()">tan</button>
+        <button onclick="log10()">log</button>
+        <button onclick="In()">In</button>
+         <button onclick="addHistory()"></button>
+        <button onclick="square()">x²</button>
+       
+        </div>
+        <div class="history"id="history"></div>
+        </div>
+        <script>
+        const display =
+        document.getElementById('display');
+        const historyEl=
+        document.getElementById('history');
+        let history = [];
+
+        function append(val){display.value+=val;}
+        function clearDisplay(){ display.value='';}
+        function backspace(){ display.value=display.value.slice(0,-1);}
+
+        function calculate(){
+            try{
+                const result = eval(display.value);
+                addHistory(display.value+'='+result);
+                display.value=result;
+            }
+            catch{display.value = 'Error';}
+        }
+        function addHistory(item){
+            history.unshift(item);
+            if(history.length>10) history.pop();
+            renderHistory();
+        }
+        function renderHistory(){
+            historyEl.innerHTML = '';
+            history.forEach(h=>{
+                const div =
+                document.createElement('div');
+                 div.className='history-item';
+                 div.textContent = h;
+                 div.onclick = ()=>{ display.value=h.split('=')[0].trim();};
+                 historyEl.appendChild(div);
+            });
+        }
+        function square(){ safeCompute(v=>Math.pow(v,2));}
+        
+        function sqrt(){ safeCompute(Math.sqrt);}
+        function pi(){ display.value +=Math.PI.toFixed(6);}
+        function econst(){ display.value+=Math.E.toFixed(6);}
+        function sin(){ safeCompute(v=>Math.sin(toRad(v)));}
+        function cos(){ safeCompute(v=>Math.cos(toRad(v)));}
+        function tan(){ safeCompute(v=>Math.tan(toRad(v)));}
+         function log10(){ safeCompute(v=>Math.log10(v));}
+        function In(){ safeCompute(v=>Math.log(v));}
+
+        function safeCompute(fn)
+        { try
+            {
+                const v = eval(display.value);
+                const r = fn(v); 
+                
+                     display.value =r;
+        }catch{ display.value = 'Error';}}
+        function toRad(deg){ return deg *(Math.PI/180);} 
+        function toggleTheme(){ document.body.classList.toggle('dark');} 
+        
+       document.addEventListener('Keydown',e=>{if((eKey>='0'&&e.Key<='9')|| ['+','-','*','/','.','%'].includes(e.key)){append(e.key);}else if(e.key==='Enter')
+
+            {calculate();}else if(e.key==='Backspace'){backspace();}else if(e.key.toLowerCase()==='c'){ clearDisplay();}});
+       
+        </script>
+</body>
+</html>        
